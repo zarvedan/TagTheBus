@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Tag the Bus !</string>
+
+    <string name="title_section1">Map</string>
+    <string name="title_section2">List</string>
+    <string name="my_google_maps_api_key">AIzaSyAaiHU-M9lop_dYDX4uN98zpp7cZagZS-A</string>
+
+    <string name="hello_world">Hello world!</string>
+
+    <string name="action_settings">Settings</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+</resources>
