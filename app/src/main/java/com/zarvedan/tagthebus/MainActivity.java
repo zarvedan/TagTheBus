@@ -1,5 +1,6 @@
 package com.zarvedan.tagthebus;
 
+import java.util.ArrayList;
 import java.util.Locale;
 
 import android.net.Uri;
@@ -20,8 +21,9 @@ import android.view.MenuItem;
 public class MainActivity extends ActionBarActivity
         implements ActionBar.TabListener,
         ListStationsFragment.OnFragmentInteractionListener,
-        MapFragment.OnFragmentInteractionListener
-        {
+        MyMapFragment.OnFragmentInteractionListener,
+        ListPhotosStationsFragment.OnFragmentInteractionListener
+{
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -37,17 +39,21 @@ public class MainActivity extends ActionBarActivity
      * The {@link ViewPager} that will host the section contents.
      */
     ViewPager mViewPager;
-            public FragmentManager mFragmentManager;
-
+    public FragmentManager fm = getSupportFragmentManager();
+    public ListStationsFragment myListStationsFragment;
+    public ActionBar myActionBar;
+public ArrayList<String> listStationsBusString = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mFragmentManager = getSupportFragmentManager();
+        fm = getSupportFragmentManager();
 
         // Set up the action bar.
-        final ActionBar actionBar = getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        myActionBar = getSupportActionBar();
+        myActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        myActionBar.setCustomView(R.layout.action_bar_layout);
+        myActionBar.setDisplayShowCustomEnabled(true);
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -63,7 +69,7 @@ public class MainActivity extends ActionBarActivity
         mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
-                actionBar.setSelectedNavigationItem(position);
+                myActionBar.setSelectedNavigationItem(position);
             }
         });
 
@@ -73,8 +79,8 @@ public class MainActivity extends ActionBarActivity
             // the adapter. Also specify this Activity object, which implements
             // the TabListener interface, as the callback (listener) for when
             // this tab is selected.
-            actionBar.addTab(
-                    actionBar.newTab()
+            myActionBar.addTab(
+                    myActionBar.newTab()
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
         }
@@ -82,7 +88,32 @@ public class MainActivity extends ActionBarActivity
 
 
     }
+    @Override
+    public void onStart() {
+        super.onStart();
 
+
+/*
+        myListStationsFragment = (ListStationsFragment) fm.findFragmentById(R.id.ListStationsContainer);
+        if (fm.findFragmentById(R.id.ListStationsContainer) == null) {
+            Log.d("container","is null");
+            fm.beginTransaction().add(R.id.ListStationsContainer, myListStationsFragment).commit();
+        }
+        if(myListStationsFragment == null){
+            Log.d("fragment","is null");
+        }else{
+            Log.d("fragment","is not null");
+        }*/
+    }
+
+    public void sauvegarderList(ArrayList<String> arrayList){
+        Log.d("h","Arraylist:"+arrayList.toString());
+        listStationsBusString = arrayList;
+    }
+
+    public ArrayList<String> recupererListeStations(){
+        return listStationsBusString;
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -122,18 +153,22 @@ public class MainActivity extends ActionBarActivity
     }
 
     @Override
-    public void onFragmentInteraction(String id) {
+    public void onFragmentInteractionListStations(String id) {
 
     }
 
     @Override
-    public void onFragmentInteraction(Uri uri) {
+    public void onFragmentInteractionMap(Uri uri) {
+
+    }
+
+    @Override
+    public void onFragmentInteractionListPhotosStations(String id) {
 
     }
 
 
-
-/**
+    /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
@@ -147,12 +182,14 @@ public class MainActivity extends ActionBarActivity
         public Fragment getItem(int position) {
             switch(position){
                 case 0:
-                    return MapFragment.newInstance("","");
+                    return MyMapFragment.newInstance("", "");
                 case 1:
                     return ListStationsFragment.newInstance("","");
+                //return ListPhotosStationsFragment.newInstance("","");
             }
             return null;
         }
+
 
         @Override
         public int getCount() {
