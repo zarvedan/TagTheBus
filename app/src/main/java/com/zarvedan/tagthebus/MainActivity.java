@@ -15,7 +15,7 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-
+import android.view.View;
 
 
 public class MainActivity extends ActionBarActivity
@@ -135,6 +135,10 @@ public ArrayList<String> listStationsBusString = new ArrayList<>();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void refreshList(View view){
+
     }
 
     @Override

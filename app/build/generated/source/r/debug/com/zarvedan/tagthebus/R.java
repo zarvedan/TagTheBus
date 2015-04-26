@@ -1713,8 +1713,8 @@ containing a value of this type.
         public static final int powered_by_google_light=0x7f020056;
     }
     public static final class id {
-        public static final int ListPhotosStationsContainer=0x7f0a0055;
-        public static final int ListStationsContainer=0x7f0a005a;
+        public static final int ListPhotosStationsContainer=0x7f0a0056;
+        public static final int ListStationsContainer=0x7f0a005b;
         public static final int action_bar=0x7f0a0046;
         public static final int action_bar_activity_content=0x7f0a0000;
         public static final int action_bar_container=0x7f0a0045;
@@ -1728,7 +1728,7 @@ containing a value of this type.
         public static final int action_mode_bar=0x7f0a0043;
         public static final int action_mode_bar_stub=0x7f0a0042;
         public static final int action_mode_close_button=0x7f0a0035;
-        public static final int action_settings=0x7f0a005b;
+        public static final int action_settings=0x7f0a005c;
         public static final int activity_chooser_view_content=0x7f0a0036;
         public static final int adjust_height=0x7f0a0017;
         public static final int adjust_width=0x7f0a0018;
@@ -1760,19 +1760,20 @@ containing a value of this type.
         public static final int icon=0x7f0a003b;
         public static final int ifRoom=0x7f0a001e;
         public static final int image=0x7f0a0038;
-        public static final int imageButton=0x7f0a0059;
-        public static final int label=0x7f0a0057;
+        public static final int imageButton=0x7f0a005a;
+        public static final int imageButton2=0x7f0a0054;
+        public static final int label=0x7f0a0058;
         public static final int listMode=0x7f0a0009;
         public static final int list_item=0x7f0a003a;
-        public static final int map=0x7f0a0056;
+        public static final int map=0x7f0a0057;
         public static final int match_parent=0x7f0a002b;
         public static final int middle=0x7f0a0016;
         public static final int monochrome=0x7f0a0032;
         public static final int never=0x7f0a001f;
-        public static final int nomStation=0x7f0a0058;
+        public static final int nomStation=0x7f0a0059;
         public static final int none=0x7f0a000e;
         public static final int normal=0x7f0a000a;
-        public static final int pager=0x7f0a0054;
+        public static final int pager=0x7f0a0055;
         public static final int production=0x7f0a0026;
         public static final int progress_circular=0x7f0a0005;
         public static final int progress_horizontal=0x7f0a0006;
@@ -1837,12 +1838,11 @@ containing a value of this type.
         public static final int abc_simple_dropdown_hint=0x7f040015;
         public static final int action_bar_layout=0x7f040016;
         public static final int activity_main=0x7f040017;
-        public static final int fragment_blank=0x7f040018;
-        public static final int fragment_map=0x7f040019;
-        public static final int image_et_texte_layout=0x7f04001a;
-        public static final int list_photos_stations_fragment_layout=0x7f04001b;
-        public static final int list_stations_fragment_layout=0x7f04001c;
-        public static final int support_simple_spinner_dropdown_item=0x7f04001d;
+        public static final int fragment_map=0x7f040018;
+        public static final int image_et_texte_layout=0x7f040019;
+        public static final int list_photos_stations_fragment_layout=0x7f04001a;
+        public static final int list_stations_fragment_layout=0x7f04001b;
+        public static final int support_simple_spinner_dropdown_item=0x7f04001c;
     }
     public static final class menu {
         public static final int menu_main=0x7f0e0000;

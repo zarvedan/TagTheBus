@@ -10,7 +10,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="47dp"
-        android:background="#ffbcb7b9">
+        android:background="#afccc7c9">
 
         <TextView
             android:layout_width="wrap_content"
@@ -25,7 +25,7 @@
             android:layout_height="match_parent"
             android:id="@+id/imageButton"
             android:layout_gravity="right"
-            android:src="@android:drawable/ic_menu_add" />
+            android:src="@android:drawable/ic_menu_camera" />
     </FrameLayout>
 
     <ListView

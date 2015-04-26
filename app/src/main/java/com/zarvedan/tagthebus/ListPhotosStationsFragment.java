@@ -66,7 +66,6 @@ public class ListPhotosStationsFragment extends ListFragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-
         Log.d("listphotosstations","ONCREATE");
         String[] values = new String[] { "Photo 1",
                 "Photo 2", "Photo 3" };

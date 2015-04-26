@@ -115,16 +115,15 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback{
             Log.d("MapFragment is null", "yo");
         }
         if (mapFragment != null) {
-
             try {
                 mapFragment.getMapAsync(this);
             } catch (Exception e) {
                 Log.d("catched error", "error");
                 e.printStackTrace();
             }
-
         }
     }
+
     public void recupererListStations() {
         RequestQueue queue = Volley.newRequestQueue(getActivity().getApplicationContext());
         final JsonObjectRequest jsObjRequest = new JsonObjectRequest(Request.Method.GET, url, null,
