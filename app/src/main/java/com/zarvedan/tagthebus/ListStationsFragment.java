@@ -18,6 +18,20 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -31,6 +45,9 @@ import java.util.Arrays;
 public class ListStationsFragment extends ListFragment {
 
     ArrayList<String> listStationsDeBusString = new ArrayList<>();
+    GoogleMap mapBarcelone;
+    //WebService pour Barcelone mais peut-être changer pour une autre ville
+    String url = "http://barcelonaapi.marcpous.com/bus/nearstation/latlon/41.3985182/2.1917991/1.json";
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -124,6 +141,7 @@ public class ListStationsFragment extends ListFragment {
             fragmentTransaction.show(fragment);
 
             fragmentTransaction.commit();
+
         }
     }
 
@@ -132,7 +150,7 @@ public class ListStationsFragment extends ListFragment {
         super.onStart();
         /*Mise en place d'un timer pour attendre la fin de l'appel du webservice dans MyMapFragment.
         Préférer communiquer entre fragments via les Bundle ou mise en place d'un écouteur type notify()/wait() */
-            CountDownTimer myCountDown = new CountDownTimer(3000, 1000) {
+         /*   CountDownTimer myCountDown = new CountDownTimer(4000, 1000) {
                 @Override
                 public void onTick(long millisUntilFinished) {
                 }
@@ -140,14 +158,62 @@ public class ListStationsFragment extends ListFragment {
                     afficherListStations();
                 }
             }.start();
+            */
+        recupererListStations();
     }
 
+    public void recupererListStations() {
+        RequestQueue queue = Volley.newRequestQueue(getActivity().getApplicationContext());
+        final JsonObjectRequest jsObjRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d("WEBSERVICE: ", "OK");
+                        try {
+                            remplirListeStationsBus(response);
+                        } catch (Throwable throwable) {
+                            throwable.printStackTrace();
+                        }
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("WEBSERVICE: ", "ERREUR: " + error.toString());
+            }
+        }
+        );
+        queue.add(jsObjRequest);
+    }
+
+    public void remplirListeStationsBus(JSONObject response) throws Throwable {
+        JSONObject jsObjData = null;
+        JSONArray jsArrNearstations = null;
+        JSONObject jsObjStationDeBus = null;
+
+        try {
+            jsObjData = response.getJSONObject("data");
+            jsArrNearstations = jsObjData.getJSONArray("nearstations");
+            Log.d("TEST_Array", jsArrNearstations.toString());
+            for (int i = 0; i < jsArrNearstations.length(); i++) {
+                jsObjStationDeBus = jsArrNearstations.getJSONObject(i);
+                String nom = jsObjStationDeBus.getString("street_name");
+                listStationsDeBusString.add(jsObjStationDeBus.getString("street_name"));
+            }
+
+        } catch (JSONException e) {
+            Log.w("Remplir liste error", "CATCH exception :" + e.toString());
+            Log.d("JSON Error", response.toString());
+        }
+        //((MainActivity) getActivity()).sauvegarderList(listStationsDeBusString);
+afficherListStations();
+    }
 
 
     public void afficherListStations(){
 
-        listStationsDeBusString = ((MainActivity) getActivity()).recupererListeStations();
-        Log.d("afficher", "Arraylist:" + listStationsDeBusString.toString());
+        //listStationsDeBusString = ((MainActivity) getActivity()).recupererListeStations();
+        //Log.d("afficher", "Arraylist:" + listStationsDeBusString.toString());
         ArrayAdapter<String> listAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, listStationsDeBusString);
         this.setListAdapter(listAdapter);
 

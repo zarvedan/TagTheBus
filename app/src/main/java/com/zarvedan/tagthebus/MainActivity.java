@@ -1,9 +1,20 @@
 package com.zarvedan.tagthebus;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Locale;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+
+import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.*;
 import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -16,6 +27,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 
 public class MainActivity extends ActionBarActivity
@@ -34,7 +46,9 @@ public class MainActivity extends ActionBarActivity
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
     SectionsPagerAdapter mSectionsPagerAdapter;
-
+    static final int REQUEST_IMAGE_CAPTURE = 1;
+    static final int REQUEST_TAKE_PHOTO = 1;
+    public static String DIRECTORY_TAGTHEBUS = "TagTheBus";
     /**
      * The {@link ViewPager} that will host the section contents.
      */
@@ -42,7 +56,12 @@ public class MainActivity extends ActionBarActivity
     public FragmentManager fm = getSupportFragmentManager();
     public ListStationsFragment myListStationsFragment;
     public ActionBar myActionBar;
-public ArrayList<String> listStationsBusString = new ArrayList<>();
+    protected String mCurrentPhotoPath;
+    //Variables Toast
+    public Toast toast;
+    public int duration = Toast.LENGTH_LONG;
+    public ArrayList<String> listStationsBusString = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -212,5 +231,89 @@ public ArrayList<String> listStationsBusString = new ArrayList<>();
             return null;
         }
     }
+
+    public void prendrePhoto(View view) {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        Log.d("VIEW", ":" + view.getLayoutParams().toString());
+        FragmentManager fragmentManager = getSupportFragmentManager();
+
+        ListPhotosStationsFragment fragment = (ListPhotosStationsFragment) fragmentManager.findFragmentById(R.id.ListPhotosStationsContainer);
+        Log.d("VIEW",":"+fragment.nomStationBus);
+        String nomPhoto = fragment.nomStationBus;
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = null;
+            try {
+                photoFile = createImageFile(nomPhoto);
+            } catch (IOException e) {
+                // Error occurred while creating the File
+                Log.d("prendrePhoto Erreur",": "+e);
+            }
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+                        Uri.fromFile(photoFile));
+                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+                            }
+        }
+    }
+
+    /*public void prendrePhoto(View view){
+       Boolean cameraOk = safeCameraOpen(1);
+    }
+
+    private boolean safeCameraOpen(int id) {
+        boolean qOpened = false;
+
+        try {
+            releaseCameraAndPreview();
+            mCamera = Camera.open(id);
+            qOpened = (mCamera != null);
+        } catch (Exception e) {
+            Log.e(getString(R.string.app_name), "failed to open Camera");
+            e.printStackTrace();
+        }
+
+        return qOpened;
+    }
+
+    private void releaseCameraAndPreview() {
+        mPreview.setCamera(null);
+        if (mCamera != null) {
+            mCamera.release();
+            mCamera = null;
+        }
+    }*/
+
+
+
+
+    private File createImageFile(String nomPhoto) throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = nomPhoto +"@"+ timeStamp + "_";
+
+        File storageDir = Environment.getExternalStoragePublicDirectory("/TagTheBus");
+        Log.d("timeStamp",":"+timeStamp);
+
+        if (!storageDir.exists()) {
+            Log.d("createImageFile","On doit créér le répertoire");
+            Boolean repertoireCree = storageDir.mkdir();
+            if (repertoireCree){
+                Log.d("REPERTOIRE CREE","YES");
+            }
+        }
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+        Log.d("image","enregistree:"+image.getAbsolutePath());
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+        return image;
+    }
+
 
 }
