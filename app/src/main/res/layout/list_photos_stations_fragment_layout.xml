@@ -10,12 +10,16 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="47dp"
-        android:background="#afccc7">
+        android:background="#afccc7"
+        android:focusable="false"
+        android:clickable="true">
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
+            android:textAlignment="center"
+            android:gravity="center"
             android:textColor="#000000"
             android:id="@+id/nomStation"
             android:textSize="18sp" />
@@ -24,6 +28,7 @@
             android:layout_width="53dp"
             android:layout_height="match_parent"
             android:id="@+id/imageButton"
+            android:background="#afccc7"
             android:onClick="prendrePhoto"
             android:layout_gravity="right"
             android:src="@android:drawable/ic_menu_camera" />

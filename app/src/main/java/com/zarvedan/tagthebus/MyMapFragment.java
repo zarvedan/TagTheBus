@@ -15,6 +15,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -39,15 +40,16 @@ import java.util.ArrayList;
  */
 public class MyMapFragment extends Fragment implements OnMapReadyCallback{
 
-    protected LatLng barcelone = new LatLng(41.4118235, 2.1853957);
+    //protected LatLng barcelone = new LatLng(41.4118235, 2.1853989);
+    protected LatLng barcelone = new LatLng(41.4, 2.19);
     GoogleMap mapBarcelone;
-    public MainActivity mainActivity;
     ListStationsFragment listStations = new ListStationsFragment();
     ArrayList<String> listStationsDeBusString = new ArrayList<>();
     ArrayList<Station> listStationsDeBus = new ArrayList<>();
-
+    private static Integer ZOOM_LEVEL = 14;
     //WebService pour Barcelone mais peut-être changer pour une autre ville
     String url = "http://barcelonaapi.marcpous.com/bus/nearstation/latlon/41.3985182/2.1917991/1.json";
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -88,6 +90,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback{
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
     }
 
     @Override
@@ -97,18 +100,11 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback{
         return inflater.inflate(R.layout.fragment_map, container, false);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteractionMap(uri);
-        }
-    }
 
     @Override
     public void onStart() {
         super.onStart();
-        recupererListStations();
-        Log.d("ON START","ON START");
+        Log.d("MYMAPFRAGMENT","ON START");
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
         if (mapFragment == null) {
@@ -121,6 +117,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback{
                 Log.d("catched error", "error");
                 e.printStackTrace();
             }
+            recupererListStations();
         }
     }
 
@@ -130,18 +127,17 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback{
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.d("WEBSERVICE: ", "OK");
+                        Log.d("WEBSERVICE MAP: ", "OK");
                         try {
                             remplirListeStationsBus(response);
                         } catch (Throwable throwable) {
                             throwable.printStackTrace();
                         }
-
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.d("WEBSERVICE: ", "ERREUR: " + error.toString());
+                Log.d("WEBSERVICE MAP: ", "ERREUR: " + error.toString());
             }
         }
         );
@@ -152,12 +148,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback{
         JSONObject jsObjData = null;
         JSONArray jsArrNearstations = null;
         JSONObject jsObjStationDeBus = null;
-        /*FragmentManager fm = getFragmentManager();
 
-        ListStationsFragment fragment = (ListStationsFragment) fm.findFragmentById(R.id.ListStationsContainer);
-        if(fragment == null){
-            Log.d("fragment","is null");
-        }*/
         try {
             jsObjData = response.getJSONObject("data");
             jsArrNearstations = jsObjData.getJSONArray("nearstations");
@@ -170,6 +161,9 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback{
 
                 listStationsDeBusString.add(jsObjStationDeBus.getString("street_name"));
                 listStationsDeBus.add(new Station(nom,lat,lng));
+                if(mapBarcelone == null){
+                    Log.d("mapBarcelone"," is null");
+                }
                 mapBarcelone.addMarker(new MarkerOptions()
                         .title(nom)
                         .position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))));
@@ -179,7 +173,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback{
             Log.w("Remplir liste error", "CATCH exception :" + e.toString());
             Log.d("JSON Error", response.toString());
         }
-       ((MainActivity) getActivity()).sauvegarderList(listStationsDeBusString);
+        ((MainActivity) getActivity()).sauvegarderList(listStationsDeBusString);
 
     }
 
@@ -202,14 +196,9 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback{
 
     @Override
     public void onMapReady(GoogleMap mMap) {
-
         mMap.setMyLocationEnabled(true);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(barcelone, 14));
-        // listStations = (ListStationsFragment) getActivity().getSupportFragmentManager().findFragmentByTag("ListStationsFragment");
-        Log.d("onmapready","r");
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(barcelone, ZOOM_LEVEL));
         mapBarcelone = mMap;
-
-
     }
 
     /**

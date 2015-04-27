@@ -45,7 +45,6 @@ import java.util.Arrays;
 public class ListStationsFragment extends ListFragment {
 
     ArrayList<String> listStationsDeBusString = new ArrayList<>();
-    GoogleMap mapBarcelone;
     //WebService pour Barcelone mais peut-être changer pour une autre ville
     String url = "http://barcelonaapi.marcpous.com/bus/nearstation/latlon/41.3985182/2.1917991/1.json";
 
@@ -168,7 +167,7 @@ public class ListStationsFragment extends ListFragment {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.d("WEBSERVICE: ", "OK");
+                        Log.d("WEBSERVICE LIST: ", "OK");
                         try {
                             remplirListeStationsBus(response);
                         } catch (Throwable throwable) {
@@ -179,7 +178,7 @@ public class ListStationsFragment extends ListFragment {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.d("WEBSERVICE: ", "ERREUR: " + error.toString());
+                Log.d("WEBSERVICE LIST: ", "ERREUR: " + error.toString());
             }
         }
         );
@@ -198,7 +197,7 @@ public class ListStationsFragment extends ListFragment {
             for (int i = 0; i < jsArrNearstations.length(); i++) {
                 jsObjStationDeBus = jsArrNearstations.getJSONObject(i);
                 String nom = jsObjStationDeBus.getString("street_name");
-                listStationsDeBusString.add(jsObjStationDeBus.getString("street_name"));
+                listStationsDeBusString.add(nom);
             }
 
         } catch (JSONException e) {
@@ -213,24 +212,12 @@ afficherListStations();
     public void afficherListStations(){
 
         //listStationsDeBusString = ((MainActivity) getActivity()).recupererListeStations();
-        //Log.d("afficher", "Arraylist:" + listStationsDeBusString.toString());
+        Log.d("afficher", "Arraylist:" + listStationsDeBusString.toString());
         ArrayAdapter<String> listAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, listStationsDeBusString);
         this.setListAdapter(listAdapter);
 
     }
 
-    public void afficher(ArrayList<String> arrayList){
-        Log.d("Afficher",":"+arrayList.toString());
-        String[] planets = new String[] { "Mercury", "Venus", "Earth", "Mars",
-                "Jupiter", "Saturn", "Uranus", "Neptune"};
-        ArrayList<String> planetList = new ArrayList<String>();
-        planetList.addAll(Arrays.asList(planets) );
-        ArrayAdapter<String> listAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, planetList);
-        // Set the ArrayAdapter as the ListView's adapter.
-        //  mainListView.setAdapter( listAdapter );
-        this.setListAdapter(listAdapter);
-
-    }
 
 
     /**

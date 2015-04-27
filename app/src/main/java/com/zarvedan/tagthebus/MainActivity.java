@@ -8,10 +8,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 
-import android.hardware.camera2.CaptureRequest;
-import android.hardware.camera2.*;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -48,7 +45,7 @@ public class MainActivity extends ActionBarActivity
     SectionsPagerAdapter mSectionsPagerAdapter;
     static final int REQUEST_IMAGE_CAPTURE = 1;
     static final int REQUEST_TAKE_PHOTO = 1;
-    public static String DIRECTORY_TAGTHEBUS = "TagTheBus";
+
     /**
      * The {@link ViewPager} that will host the section contents.
      */
@@ -61,6 +58,9 @@ public class MainActivity extends ActionBarActivity
     public Toast toast;
     public int duration = Toast.LENGTH_LONG;
     public ArrayList<String> listStationsBusString = new ArrayList<>();
+    public File repertoirePhotos = Environment.getExternalStoragePublicDirectory("/TagTheBus");
+    public String nomDuFichier;
+    public File monFichier;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,26 +103,11 @@ public class MainActivity extends ActionBarActivity
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
         }
-
-
-
     }
+
     @Override
     public void onStart() {
         super.onStart();
-
-
-/*
-        myListStationsFragment = (ListStationsFragment) fm.findFragmentById(R.id.ListStationsContainer);
-        if (fm.findFragmentById(R.id.ListStationsContainer) == null) {
-            Log.d("container","is null");
-            fm.beginTransaction().add(R.id.ListStationsContainer, myListStationsFragment).commit();
-        }
-        if(myListStationsFragment == null){
-            Log.d("fragment","is null");
-        }else{
-            Log.d("fragment","is not null");
-        }*/
     }
 
     public void sauvegarderList(ArrayList<String> arrayList){
@@ -130,10 +115,10 @@ public class MainActivity extends ActionBarActivity
         listStationsBusString = arrayList;
     }
 
-    public ArrayList<String> recupererListeStations(){
-        return listStationsBusString;
-    }
-
+    /* public ArrayList<String> recupererListeStations(){
+         return listStationsBusString;
+     }
+ */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -234,20 +219,18 @@ public class MainActivity extends ActionBarActivity
 
     public void prendrePhoto(View view) {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        Log.d("VIEW", ":" + view.getLayoutParams().toString());
         FragmentManager fragmentManager = getSupportFragmentManager();
 
         ListPhotosStationsFragment fragment = (ListPhotosStationsFragment) fragmentManager.findFragmentById(R.id.ListPhotosStationsContainer);
         Log.d("VIEW",":"+fragment.nomStationBus);
-        String nomPhoto = fragment.nomStationBus;
+        String nomStation = fragment.nomStationBus;
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             // Create the File where the photo should go
             File photoFile = null;
             try {
-                photoFile = createImageFile(nomPhoto);
+                photoFile = creerFichier(nomStation);
             } catch (IOException e) {
-                // Error occurred while creating the File
-                Log.d("prendrePhoto Erreur",": "+e);
+                Log.d("Erreur creationFichier ",": "+e);
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
@@ -255,65 +238,77 @@ public class MainActivity extends ActionBarActivity
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
                         Uri.fromFile(photoFile));
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
-                            }
-        }
-    }
-
-    /*public void prendrePhoto(View view){
-       Boolean cameraOk = safeCameraOpen(1);
-    }
-
-    private boolean safeCameraOpen(int id) {
-        boolean qOpened = false;
-
-        try {
-            releaseCameraAndPreview();
-            mCamera = Camera.open(id);
-            qOpened = (mCamera != null);
-        } catch (Exception e) {
-            Log.e(getString(R.string.app_name), "failed to open Camera");
-            e.printStackTrace();
-        }
-
-        return qOpened;
-    }
-
-    private void releaseCameraAndPreview() {
-        mPreview.setCamera(null);
-        if (mCamera != null) {
-            mCamera.release();
-            mCamera = null;
-        }
-    }*/
-
-
-
-
-    private File createImageFile(String nomPhoto) throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = nomPhoto +"@"+ timeStamp + "_";
-
-        File storageDir = Environment.getExternalStoragePublicDirectory("/TagTheBus");
-        Log.d("timeStamp",":"+timeStamp);
-
-        if (!storageDir.exists()) {
-            Log.d("createImageFile","On doit créér le répertoire");
-            Boolean repertoireCree = storageDir.mkdir();
-            if (repertoireCree){
-                Log.d("REPERTOIRE CREE","YES");
             }
         }
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-        Log.d("image","enregistree:"+image.getAbsolutePath());
-        // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
-        return image;
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Check which request we're responding to
+        if (requestCode == REQUEST_TAKE_PHOTO) {
+            // Make sure the request was successful
+            if (resultCode == RESULT_OK) {
+                FragmentManager fm = getSupportFragmentManager();
+                AlertDialogTitrePhotoFragment alertdFragment = new AlertDialogTitrePhotoFragment();
+                FragmentTransaction ft = fm.beginTransaction();
+                ft.add(alertdFragment, "Titre");
+                ft.commitAllowingStateLoss();
+            }
+        }
+    }
 
+    protected void enregistrerPhoto(String titrePhoto){
+        if (monFichier==null){
+            Log.d("enregistrerPhoto","NULLLL:"+titrePhoto);
+        }
+        Log.d("enregistrerPhoto",":"+monFichier.getName());
+        File monFichierAvecTitre = new File(repertoirePhotos, titrePhoto+"%"+monFichier.getName());
+        Boolean renommageReussi = monFichier.renameTo(monFichierAvecTitre);
+
+        if (!renommageReussi){
+            Log.d("enregistrerPhoto Raté",":"+monFichierAvecTitre.getName());
+        }
+    }
+
+    protected File creerFichier(String nomPhoto) throws IOException {
+
+        String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date());
+        String imageFileName = nomPhoto +"@"+ timeStamp+"*";
+        nomDuFichier = imageFileName+".jpg";
+
+        if (!repertoirePhotos.exists()) {
+            Log.d("creerFichier","On crée le répertoire");
+            Boolean repertoireCree = repertoirePhotos.mkdir();
+            if (repertoireCree){
+                Log.d("REPERTOIRE CREE","OK");
+            }
+        }
+        monFichier = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                repertoirePhotos      /* directory */
+        );
+
+        Log.d("image","enregistree:"+monFichier.getAbsolutePath());
+        // Save a file: path for use with ACTION_VIEW intents
+        //mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+        return monFichier;
+    }
+
+   /* @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Log.d("onBackPressed", "BACK PRESSED ");
+
+        ListPhotosStationsFragment fragment = (ListPhotosStationsFragment) fm.findFragmentById(R.id.ListPhotosStationsContainer);
+        Boolean success = fragment.isVisible();
+        if(success){
+            Log.d("ListPhotosStationsFr", "non visible on demande a quitter ");
+            FragmentTransaction transaction = fm.beginTransaction();
+            AlertDialogQuitFragment alertdFragment = new AlertDialogQuitFragment();
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.add(alertdFragment, "Quit");
+            ft.commit();
+        }
+    }*/
 }

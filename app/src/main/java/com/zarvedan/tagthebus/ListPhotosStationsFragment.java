@@ -70,7 +70,7 @@ public class ListPhotosStationsFragment extends ListFragment {
         String[] values = new String[] { "Photo 1",
                 "Photo 2", "Photo 3" };
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.image_et_texte_layout, R.id.label, values);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.image_et_texte_layout, R.id.titre, values);
         //  ArrayAdapter<String> adapter = new ArrayAdapter<String>()
         setListAdapter(adapter);
     }
