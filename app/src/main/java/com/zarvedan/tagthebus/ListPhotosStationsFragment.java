@@ -1,19 +1,27 @@
 package com.zarvedan.tagthebus;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.zarvedan.tagthebus.dummy.DummyContent;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * A fragment representing a list of Items.
@@ -22,28 +30,18 @@ import com.zarvedan.tagthebus.dummy.DummyContent;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class ListPhotosStationsFragment extends ListFragment {
+public class ListPhotosStationsFragment extends ListFragment implements AdapterView.OnItemLongClickListener {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     private OnFragmentInteractionListener mListener;
     protected String nomStationBus;
+    public File repertoirePhotos = Environment.getExternalStoragePublicDirectory("/TagTheBus");
+    ArrayList<String> titres = new ArrayList<>();
+    ArrayList<String> dateEtHeure = new ArrayList<>();
 
-
-    // TODO: Rename and change types of parameters
-    public static ListPhotosStationsFragment newInstance(String param1, String param2) {
+    public static ListPhotosStationsFragment newInstance() {
         ListPhotosStationsFragment fragment = new ListPhotosStationsFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
         return fragment;
     }
 
@@ -56,23 +54,42 @@ public class ListPhotosStationsFragment extends ListFragment {
 
     public void recupererNomStation(String str) {
         nomStationBus = str;
+        Log.d("nom station recupere ", ": "+str);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
         Log.d("listphotosstations","ONCREATE");
-        String[] values = new String[] { "Photo 1",
-                "Photo 2", "Photo 3" };
+        afficherList();
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.image_et_texte_layout, R.id.titre, values);
-        //  ArrayAdapter<String> adapter = new ArrayAdapter<String>()
-        setListAdapter(adapter);
+
+        /*File dir = new File(repertoirePhotos.getAbsolutePath());
+        File[] files = dir.listFiles();
+        ArrayList<Photo> listNomsDeFichierComplet = new ArrayList<>();
+        ArrayList<Photo> listNomsDeFichierSpecifique = new ArrayList<>();
+        for (File inFile : files) {
+            listNomsDeFichierComplet.add(new Photo(inFile));
+        }
+        for (Photo photo : listNomsDeFichierComplet){
+            photo.parserInfosFichierSource(photo.fichierSource);
+        }
+
+        for (Photo photo : listNomsDeFichierComplet) {
+            if(photo.getStation() == nomStationBus) {
+                Log.d("listphotosstations", "titre: " + photo.getTitre());
+                titres.add(photo.getTitre());
+                Log.d("listphotosstations", "station: " + photo.getStation());
+                Log.d("listphotosstations", "date: " + photo.getDate());
+                Log.d("listphotosstations", "heure: " + photo.getHeure());
+                dateEtHeure.add(photo.getDate() + " - " + photo.getHeure());
+                listNomsDeFichierSpecifique.add(photo);
+            }
+        }
+
+        ArrayAdapterPersonalise adapter = new ArrayAdapterPersonalise(getActivity(),listNomsDeFichierSpecifique);
+        setListAdapter(adapter);*/
     }
 
     @Override
@@ -81,7 +98,22 @@ public class ListPhotosStationsFragment extends ListFragment {
         View view =  inflater.inflate(R.layout.list_photos_stations_fragment_layout, container, false);
         TextView nomStationTextView = (TextView) view.findViewById(R.id.nomStation);
         nomStationTextView.setText(nomStationBus);
+
         return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ListView lv = getListView();
+        lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+            @Override
+            public boolean onItemLongClick(AdapterView<?> av, View v, int pos, long id)
+            {
+                Log.d("LONG clicked", "");
+                return true;
+            }
+        });
     }
 
     @Override
@@ -93,6 +125,12 @@ public class ListPhotosStationsFragment extends ListFragment {
             throw new ClassCastException(activity.toString()
                     + " must implement OnFragmentInteractionListener");
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d("ONRESUME", "ONRESUME: ");
     }
 
     @Override
@@ -112,8 +150,65 @@ public class ListPhotosStationsFragment extends ListFragment {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
             Log.d("clicked","");
+            FragmentManager fm = getActivity().getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fm.beginTransaction();
+            PhotoPleinEcranFragment fragment = new PhotoPleinEcranFragment();
+            Photo photo = (Photo) l.getItemAtPosition(position);
+
+
+
+            fragmentTransaction.replace(R.id.PhotoPleinEcranContainer,fragment);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.show(fragment);
+            Log.d("clicked","shoooow");
+            fragmentTransaction.commit();
+
+
+            Log.d("clicked",""+photo.getFichierSource().getAbsolutePath());
+            fragment.afficheImage(photo.getFichierSource().getAbsolutePath());
             mListener.onFragmentInteractionListPhotosStations(DummyContent.ITEMS.get(position).id);
         }
+    }
+
+    public void afficherList(){
+        File dir = new File(repertoirePhotos.getAbsolutePath());
+        File[] files = dir.listFiles();
+        ArrayList<Photo> listNomsDeFichierComplet = new ArrayList<>();
+        ArrayList<Photo> listNomsDeFichierSpecifique = new ArrayList<>();
+        for (File inFile : files) {
+            listNomsDeFichierComplet.add(new Photo(inFile));
+        }
+        for (Photo photo : listNomsDeFichierComplet){
+            photo.parserInfosFichierSource(photo.fichierSource);
+        }
+        for (Photo photo : listNomsDeFichierComplet) {
+            Log.d("photo.getStation()",": "+photo.getStation()+"nomStationBus: "+nomStationBus);
+            if(photo.getStation().equals(nomStationBus)) {
+                Log.d("listphotosstations", "fichierSource: " + photo.getFichierSource());
+                Log.d("listphotosstations", "titre: " + photo.getTitre());
+               // titres.add(photo.getTitre());
+                Log.d("listphotosstations", "station: " + photo.getStation());
+                Log.d("listphotosstations", "date: " + photo.getDate());
+                Log.d("listphotosstations", "heure: " + photo.getHeure());
+                //dateEtHeure.add(photo.getDate() + " - " + photo.getHeure());
+                listNomsDeFichierSpecifique.add(photo);
+            }
+        }
+
+        ArrayAdapterPersonalise adapter = new ArrayAdapterPersonalise(getActivity(),listNomsDeFichierSpecifique);
+        setListAdapter(adapter);
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        Photo photo = (Photo) parent.getItemAtPosition(position);
+        Log.d("supprimer", "station: "+photo.getTitre());
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        AlertDialogTitrePhotoFragment alertdFragment = new AlertDialogTitrePhotoFragment();
+        FragmentTransaction ft = fm.beginTransaction();
+        ft.add(alertdFragment, "Titre");
+        ft.commitAllowingStateLoss();
+        return false;
     }
 
     /**

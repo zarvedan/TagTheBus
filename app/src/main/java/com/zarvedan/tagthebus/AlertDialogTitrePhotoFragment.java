@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
 import android.text.InputType;
 import android.util.Log;
 import android.content.DialogInterface;
@@ -25,11 +26,15 @@ public class AlertDialogTitrePhotoFragment extends DialogFragment {
                 .setTitle("Titre de la photo :")
                 .setMessage("Donnez un titre à votre photo :")
                 .setView(titrePhoto)
-                          .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         Log.d("OK", "ok");
                         ((MainActivity) getActivity()).enregistrerPhoto(titrePhoto.getText().toString());
+                        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
 
+                        ListPhotosStationsFragment fragment = (ListPhotosStationsFragment) fragmentManager.findFragmentById(R.id.ListPhotosStationsContainer);
+                        fragment.afficherList();
+                        Log.d("REFRESh", "on a refresh");
                     }
                 })
                 .create();

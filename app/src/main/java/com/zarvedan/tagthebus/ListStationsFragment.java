@@ -131,7 +131,7 @@ public class ListStationsFragment extends ListFragment {
             ActionBarActivity myActionBarActivity = (ActionBarActivity) getActivity();
             myActionBarActivity.getSupportActionBar().hide();
 
-            FragmentManager fragmentManager = getFragmentManager();
+            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             ListPhotosStationsFragment fragment = new ListPhotosStationsFragment();
             fragment.recupererNomStation(nomStationBus);

@@ -31,7 +31,8 @@ public class MainActivity extends ActionBarActivity
         implements ActionBar.TabListener,
         ListStationsFragment.OnFragmentInteractionListener,
         MyMapFragment.OnFragmentInteractionListener,
-        ListPhotosStationsFragment.OnFragmentInteractionListener
+        ListPhotosStationsFragment.OnFragmentInteractionListener,
+        PhotoPleinEcranFragment.OnFragmentInteractionListener
 {
 
     /**
@@ -175,6 +176,11 @@ public class MainActivity extends ActionBarActivity
 
     }
 
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
+    }
+
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -259,21 +265,27 @@ public class MainActivity extends ActionBarActivity
 
     protected void enregistrerPhoto(String titrePhoto){
         if (monFichier==null){
-            Log.d("enregistrerPhoto","NULLLL:"+titrePhoto);
+            Log.d("enregistrerPhoto","NULL:"+titrePhoto);
+              }
+        File monFichierAvecTitre = null;
+        try {
+            monFichierAvecTitre = new File(repertoirePhotos, titrePhoto+"@"+monFichier.getName());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        Log.d("enregistrerPhoto",":"+monFichier.getName());
-        File monFichierAvecTitre = new File(repertoirePhotos, titrePhoto+"%"+monFichier.getName());
-        Boolean renommageReussi = monFichier.renameTo(monFichierAvecTitre);
 
+        Boolean renommageReussi = monFichier.renameTo(monFichierAvecTitre);
         if (!renommageReussi){
-            Log.d("enregistrerPhoto Raté",":"+monFichierAvecTitre.getName());
+            Log.d("enregistrerPhoto KO",":"+monFichierAvecTitre.getName());
+        }else{
+            Log.d("renommage ","OK");
         }
     }
 
     protected File creerFichier(String nomPhoto) throws IOException {
 
         String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date());
-        String imageFileName = nomPhoto +"@"+ timeStamp+"*";
+        String imageFileName = nomPhoto +"%"+ timeStamp+"*";
         nomDuFichier = imageFileName+".jpg";
 
         if (!repertoirePhotos.exists()) {
@@ -289,7 +301,7 @@ public class MainActivity extends ActionBarActivity
                 repertoirePhotos      /* directory */
         );
 
-        Log.d("image","enregistree:"+monFichier.getAbsolutePath());
+        Log.d("CREER FICHIER","nom de fichier temp :"+monFichier.getAbsolutePath());
         // Save a file: path for use with ACTION_VIEW intents
         //mCurrentPhotoPath = "file:" + image.getAbsolutePath();
         return monFichier;
