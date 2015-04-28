@@ -4,10 +4,15 @@ import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -21,6 +26,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
@@ -38,7 +44,9 @@ import java.util.ArrayList;
  * Use the {@link MyMapFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MyMapFragment extends Fragment implements OnMapReadyCallback{
+public class MyMapFragment extends Fragment implements OnMapReadyCallback,
+        GoogleMap.OnMarkerClickListener,
+        GoogleMap.OnMapClickListener{
 
     //protected LatLng barcelone = new LatLng(41.4118235, 2.1853989);
     protected LatLng barcelone = new LatLng(41.4, 2.19);
@@ -47,6 +55,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback{
     ArrayList<String> listStationsDeBusString = new ArrayList<>();
     ArrayList<Station> listStationsDeBus = new ArrayList<>();
     private static Integer ZOOM_LEVEL = 14;
+    private View view;
     //WebService pour Barcelone mais peut-être changer pour une autre ville
     String url = "http://barcelonaapi.marcpous.com/bus/nearstation/latlon/41.3985182/2.1917991/1.json";
 
@@ -97,7 +106,8 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_map, container, false);
+        view = inflater.inflate(R.layout.fragment_map, container, false);
+        return view;
     }
 
 
@@ -199,6 +209,29 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback{
         mMap.setMyLocationEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(barcelone, ZOOM_LEVEL));
         mapBarcelone = mMap;
+        mapBarcelone.setOnMarkerClickListener((GoogleMap.OnMarkerClickListener) this);
+        mapBarcelone.setOnMapClickListener((GoogleMap.OnMapClickListener) this);
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        Log.d("marker",":"+marker.getTitle());
+        try {
+            FrameLayout fl = (FrameLayout) view.findViewById(R.id.layoutBouton);
+            fl.setVisibility(View.VISIBLE);
+            ImageButton ib = (ImageButton) view.findViewById(R.id.boutonGallerie);
+            fl.setVisibility(View.VISIBLE);
+            ((MainActivity) getActivity()).marker = marker;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+        FrameLayout fl = (FrameLayout) view.findViewById(R.id.layoutBouton);
+        fl.setVisibility(View.INVISIBLE);
     }
 
     /**

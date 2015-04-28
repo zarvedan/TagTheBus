@@ -1,9 +1,10 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#ffffff"
-    tools:context=".PhotoPleinEcranFragment">
+    android:orientation="vertical">
 
     <com.google.android.gms.plus.PlusOneButton
         xmlns:plus="http://schemas.android.com/apk/lib/com.google.android.gms.plus"
@@ -14,16 +15,20 @@
         android:layout_marginRight="10dp"
         android:layout_gravity="right"
         plus:size="standard"
-        plus:annotation="inline" />
+        plus:annotation="none" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="33dp"
+        android:text="New Text"
+        android:id="@+id/textView"
+        android:layout_gravity="center_horizontal" />
 
     <ImageView
         android:id="@+id/photoPleinEcran"
-        android:rotation="90"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@mipmap/ic_launcher"
+        android:scaleType="fitCenter" />
 
-        android:adjustViewBounds="true"
-        android:src="@mipmap/ic_launcher">
-    </ImageView>
-
-</RelativeLayout>
+</LinearLayout>

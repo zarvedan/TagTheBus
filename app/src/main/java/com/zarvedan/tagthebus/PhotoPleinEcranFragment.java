@@ -3,11 +3,14 @@ package com.zarvedan.tagthebus;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.net.Uri;
+import android.graphics.Matrix;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +49,9 @@ public class PhotoPleinEcranFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
     protected String path = new String();
     protected View view;
+    private Bitmap bitmap;
+    private Bitmap rotatedBitmap;
+
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -87,11 +93,23 @@ public class PhotoPleinEcranFragment extends Fragment {
         try {
             BitmapFactory.Options options = new BitmapFactory.Options();
             // Réduction de la qualité pour conserver de la mémoire
-            options.inSampleSize = 1;
+            options.inSampleSize = 4;
+            Display display = getActivity().getWindowManager().getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            int width = size.x;
+            int height = size.y;
+            Matrix matrix = new Matrix();
+            bitmap = BitmapFactory.decodeFile(path,options);
+            matrix.postRotate(90);
 
-            Bitmap bitmap = BitmapFactory.decodeFile(path,options);
-            photoPleinEcran.setImageBitmap(bitmap);
-            photoPleinEcran.setScaleType(ImageView.ScaleType.FIT_XY);
+            //Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap,height,width,true);
+
+            rotatedBitmap = Bitmap.createBitmap(bitmap , 0, 0, bitmap .getWidth(), bitmap .getHeight(), matrix, true);
+            bitmap.recycle();
+            bitmap = null;
+            photoPleinEcran.setImageBitmap(rotatedBitmap);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -134,6 +152,10 @@ public class PhotoPleinEcranFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        rotatedBitmap.recycle();
+        Log.d("onDetach", "onDetach !!!!" +rotatedBitmap.isRecycled());
+        rotatedBitmap = null;
+
     }
 
     /**

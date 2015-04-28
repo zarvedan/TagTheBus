@@ -1,4 +1,4 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,4 +10,26 @@
         android:layout_height="match_parent"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         />
-</FrameLayout>
+
+    <FrameLayout
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:id="@+id/layoutBouton"
+        android:visibility="invisible"
+        android:background="#ffffff"
+
+        android:layout_marginTop="55dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="12dp">
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="voirListePhotos"
+            android:id="@+id/boutonGallerie"
+            android:visibility="visible"
+            android:layout_gravity="center"
+            android:src="@android:drawable/ic_menu_gallery" />
+    </FrameLayout>
+</RelativeLayout>

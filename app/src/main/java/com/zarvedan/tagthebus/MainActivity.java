@@ -26,6 +26,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+
 
 public class MainActivity extends ActionBarActivity
         implements ActionBar.TabListener,
@@ -62,6 +66,7 @@ public class MainActivity extends ActionBarActivity
     public File repertoirePhotos = Environment.getExternalStoragePublicDirectory("/TagTheBus");
     public String nomDuFichier;
     public File monFichier;
+    protected Marker marker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,6 +187,8 @@ public class MainActivity extends ActionBarActivity
     }
 
 
+
+
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
@@ -264,21 +271,20 @@ public class MainActivity extends ActionBarActivity
     }
 
     protected void enregistrerPhoto(String titrePhoto){
-        if (monFichier==null){
+        if (this.monFichier==null){
             Log.d("enregistrerPhoto","NULL:"+titrePhoto);
-              }
+        }
         File monFichierAvecTitre = null;
         try {
-            monFichierAvecTitre = new File(repertoirePhotos, titrePhoto+"@"+monFichier.getName());
+            monFichierAvecTitre = new File(repertoirePhotos, titrePhoto+"@"+this.monFichier.getName());
+            Boolean renommageReussi = this.monFichier.renameTo(monFichierAvecTitre);
+            if (!renommageReussi){
+                Log.d("enregistrerPhoto KO",":"+monFichierAvecTitre.getName());
+            }else{
+                Log.d("renommage ","OK");
+            }
         } catch (Exception e) {
             e.printStackTrace();
-        }
-
-        Boolean renommageReussi = monFichier.renameTo(monFichierAvecTitre);
-        if (!renommageReussi){
-            Log.d("enregistrerPhoto KO",":"+monFichierAvecTitre.getName());
-        }else{
-            Log.d("renommage ","OK");
         }
     }
 
@@ -295,7 +301,7 @@ public class MainActivity extends ActionBarActivity
                 Log.d("REPERTOIRE CREE","OK");
             }
         }
-        monFichier = File.createTempFile(
+        this.monFichier = File.createTempFile(
                 imageFileName,  /* prefix */
                 ".jpg",         /* suffix */
                 repertoirePhotos      /* directory */
@@ -307,20 +313,46 @@ public class MainActivity extends ActionBarActivity
         return monFichier;
     }
 
+    public void voirListePhotos(View view){
+        Log.d("ListItemClick","voirliste photooooos");
+
+        myActionBar = getSupportActionBar();
+        myActionBar.hide();
+        //view.setVisibility(View.INVISIBLE);
+
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        ListPhotosStationsFragment fragment = new ListPhotosStationsFragment();
+        try {
+            fragment.recupererNomStation(marker.getTitle());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        ft.replace(R.id.ListPhotosStationsContainer,fragment);
+        ft.addToBackStack(null);
+        ft.show(fragment);
+
+        ft.commit();
+    }
+
    /* @Override
     public void onBackPressed() {
         super.onBackPressed();
         Log.d("onBackPressed", "BACK PRESSED ");
+        FragmentManager fm = getSupportFragmentManager();
 
         ListPhotosStationsFragment fragment = (ListPhotosStationsFragment) fm.findFragmentById(R.id.ListPhotosStationsContainer);
-        Boolean success = fragment.isVisible();
-        if(success){
-            Log.d("ListPhotosStationsFr", "non visible on demande a quitter ");
-            FragmentTransaction transaction = fm.beginTransaction();
-            AlertDialogQuitFragment alertdFragment = new AlertDialogQuitFragment();
-            FragmentTransaction ft = fm.beginTransaction();
-            ft.add(alertdFragment, "Quit");
-            ft.commit();
+        if(fragment != null){
+            Log.d("Back","fragment is null");
+            Boolean success = fragment.isVisible();
+            if(!success) {
+                Log.d("ListPhotosStationsFr", "non visible on demande a quitter ");
+                FragmentTransaction transaction = fm.beginTransaction();
+                AlertDialogQuitFragment alertdFragment = new AlertDialogQuitFragment();
+                FragmentTransaction ft = fm.beginTransaction();
+                ft.add(alertdFragment, "Quit");
+                ft.commit();
+            }
         }
     }*/
 }

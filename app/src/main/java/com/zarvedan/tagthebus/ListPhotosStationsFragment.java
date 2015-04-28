@@ -30,15 +30,11 @@ import java.util.Arrays;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class ListPhotosStationsFragment extends ListFragment implements AdapterView.OnItemLongClickListener {
-
-
+public class ListPhotosStationsFragment extends ListFragment  {
 
     private OnFragmentInteractionListener mListener;
     protected String nomStationBus;
     public File repertoirePhotos = Environment.getExternalStoragePublicDirectory("/TagTheBus");
-    ArrayList<String> titres = new ArrayList<>();
-    ArrayList<String> dateEtHeure = new ArrayList<>();
 
     public static ListPhotosStationsFragment newInstance() {
         ListPhotosStationsFragment fragment = new ListPhotosStationsFragment();
@@ -63,33 +59,6 @@ public class ListPhotosStationsFragment extends ListFragment implements AdapterV
 
         Log.d("listphotosstations","ONCREATE");
         afficherList();
-
-
-        /*File dir = new File(repertoirePhotos.getAbsolutePath());
-        File[] files = dir.listFiles();
-        ArrayList<Photo> listNomsDeFichierComplet = new ArrayList<>();
-        ArrayList<Photo> listNomsDeFichierSpecifique = new ArrayList<>();
-        for (File inFile : files) {
-            listNomsDeFichierComplet.add(new Photo(inFile));
-        }
-        for (Photo photo : listNomsDeFichierComplet){
-            photo.parserInfosFichierSource(photo.fichierSource);
-        }
-
-        for (Photo photo : listNomsDeFichierComplet) {
-            if(photo.getStation() == nomStationBus) {
-                Log.d("listphotosstations", "titre: " + photo.getTitre());
-                titres.add(photo.getTitre());
-                Log.d("listphotosstations", "station: " + photo.getStation());
-                Log.d("listphotosstations", "date: " + photo.getDate());
-                Log.d("listphotosstations", "heure: " + photo.getHeure());
-                dateEtHeure.add(photo.getDate() + " - " + photo.getHeure());
-                listNomsDeFichierSpecifique.add(photo);
-            }
-        }
-
-        ArrayAdapterPersonalise adapter = new ArrayAdapterPersonalise(getActivity(),listNomsDeFichierSpecifique);
-        setListAdapter(adapter);*/
     }
 
     @Override
@@ -110,7 +79,17 @@ public class ListPhotosStationsFragment extends ListFragment implements AdapterV
             @Override
             public boolean onItemLongClick(AdapterView<?> av, View v, int pos, long id)
             {
-                Log.d("LONG clicked", "");
+                Log.d("LONG click", "");
+                Photo photo = (Photo) av.getItemAtPosition(pos);
+                Log.d("supprimer", "station: "+photo.getFichierSource().getAbsolutePath());
+
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                AlertDialogSupprimerPhotoFragment alertdFragment = new AlertDialogSupprimerPhotoFragment();
+                alertdFragment.setPhotoASupprimer(photo);
+                FragmentTransaction ft = fm.beginTransaction();
+                ft.add(alertdFragment, "Supprimer");
+                ft.commitAllowingStateLoss();
+
                 return true;
             }
         });
@@ -147,22 +126,16 @@ public class ListPhotosStationsFragment extends ListFragment implements AdapterV
         super.onListItemClick(l, v, position, id);
 
         if (null != mListener) {
-            // Notify the active callbacks interface (the activity, if the
-            // fragment is attached to one) that an item has been selected.
-            Log.d("clicked","");
+
             FragmentManager fm = getActivity().getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fm.beginTransaction();
             PhotoPleinEcranFragment fragment = new PhotoPleinEcranFragment();
             Photo photo = (Photo) l.getItemAtPosition(position);
 
-
-
             fragmentTransaction.replace(R.id.PhotoPleinEcranContainer,fragment);
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.show(fragment);
-            Log.d("clicked","shoooow");
             fragmentTransaction.commit();
-
 
             Log.d("clicked",""+photo.getFichierSource().getAbsolutePath());
             fragment.afficheImage(photo.getFichierSource().getAbsolutePath());
@@ -199,17 +172,7 @@ public class ListPhotosStationsFragment extends ListFragment implements AdapterV
         setListAdapter(adapter);
     }
 
-    @Override
-    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        Photo photo = (Photo) parent.getItemAtPosition(position);
-        Log.d("supprimer", "station: "+photo.getTitre());
-        FragmentManager fm = getActivity().getSupportFragmentManager();
-        AlertDialogTitrePhotoFragment alertdFragment = new AlertDialogTitrePhotoFragment();
-        FragmentTransaction ft = fm.beginTransaction();
-        ft.add(alertdFragment, "Titre");
-        ft.commitAllowingStateLoss();
-        return false;
-    }
+
 
     /**
      * This interface must be implemented by activities that contain this

@@ -22,7 +22,7 @@ public class AlertDialogTitrePhotoFragment extends DialogFragment {
         titrePhoto.setInputType(InputType.TYPE_CLASS_TEXT);
 
         return new AlertDialog.Builder(getActivity())
-                .setIcon(R.mipmap.ic_launcher)
+                .setIcon(android.R.drawable.ic_menu_edit)
                 .setTitle("Titre de la photo :")
                 .setMessage("Donnez un titre à votre photo :")
                 .setView(titrePhoto)
