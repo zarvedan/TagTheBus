@@ -1,7 +1,6 @@
 package com.zarvedan.tagthebus;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.FragmentManager;
@@ -13,27 +12,28 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.zarvedan.tagthebus.dummy.DummyContent;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-/**
- * A fragment representing a list of Items.
- * <p/>
- * <p/>
- * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
- * interface.
- */
+//*****************************************************************************************************
+//
+// Class ListPhotosStationsFragment :
+//      Affiche une ListView de toutes les photos prises à cette station :
+//      miniature + titre+ date de prise de vue
+//
+//*****************************************************************************************************
+
 public class ListPhotosStationsFragment extends ListFragment  {
 
     private OnFragmentInteractionListener mListener;
     protected String nomStationBus;
+
+    // Le répertoire où seront stockées les photos, dans mon cas /storage/emulated/0/TagTheBus
+    // Si l'utilisateur supprime l'appli, il conservera tout de même ses photos dans ce répertoire
     public File repertoirePhotos = Environment.getExternalStoragePublicDirectory("/TagTheBus");
 
     public static ListPhotosStationsFragment newInstance() {
@@ -49,14 +49,12 @@ public class ListPhotosStationsFragment extends ListFragment  {
     }
 
     public void recupererNomStation(String str) {
-        nomStationBus = str;
-        Log.d("nom station recupere ", ": "+str);
+        this.nomStationBus = str;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         Log.d("listphotosstations","ONCREATE");
         afficherList();
     }
@@ -75,13 +73,12 @@ public class ListPhotosStationsFragment extends ListFragment  {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ListView lv = getListView();
-        lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+        // Lors d'un long clic sur un item, on affiche un AlertDialog pour demander
+        // à l'utilisateur s'il souhaite supprimer la photo
+        lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> av, View v, int pos, long id)
-            {
-                Log.d("LONG click", "");
+            public boolean onItemLongClick(AdapterView<?> av, View v, int pos, long id) {
                 Photo photo = (Photo) av.getItemAtPosition(pos);
-                Log.d("supprimer", "station: "+photo.getFichierSource().getAbsolutePath());
 
                 FragmentManager fm = getActivity().getSupportFragmentManager();
                 AlertDialogSupprimerPhotoFragment alertdFragment = new AlertDialogSupprimerPhotoFragment();
@@ -89,7 +86,6 @@ public class ListPhotosStationsFragment extends ListFragment  {
                 FragmentTransaction ft = fm.beginTransaction();
                 ft.add(alertdFragment, "Supprimer");
                 ft.commitAllowingStateLoss();
-
                 return true;
             }
         });
@@ -109,7 +105,6 @@ public class ListPhotosStationsFragment extends ListFragment  {
     @Override
     public void onResume() {
         super.onResume();
-        Log.d("ONRESUME", "ONRESUME: ");
     }
 
     @Override
@@ -120,7 +115,7 @@ public class ListPhotosStationsFragment extends ListFragment  {
         myActionBarActivity.getSupportActionBar().show();
     }
 
-
+    // Lors du clic sur un itme, on l'affiche en plein écran
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
@@ -128,47 +123,45 @@ public class ListPhotosStationsFragment extends ListFragment  {
         if (null != mListener) {
 
             FragmentManager fm = getActivity().getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fm.beginTransaction();
+            FragmentTransaction ft = fm.beginTransaction();
             PhotoPleinEcranFragment fragment = new PhotoPleinEcranFragment();
             Photo photo = (Photo) l.getItemAtPosition(position);
 
-            fragmentTransaction.replace(R.id.PhotoPleinEcranContainer,fragment);
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.show(fragment);
-            fragmentTransaction.commit();
-
-            Log.d("clicked",""+photo.getFichierSource().getAbsolutePath());
-            fragment.afficheImage(photo.getFichierSource().getAbsolutePath());
-            mListener.onFragmentInteractionListPhotosStations(DummyContent.ITEMS.get(position).id);
+            ft.replace(R.id.PhotoPleinEcranContainer,fragment);
+            ft.addToBackStack(null);
+            ft.show(fragment);
+            ft.commit();
+            fragment.afficheImage(photo);
         }
     }
 
+    // Méthode qui affiche la liste des photos spécifiques à la station "nomDeStationBus"
+    // "nomDeStationBus" est initialisée par recupererNomStation appelé dans ListStationsFragment
     public void afficherList(){
         File dir = new File(repertoirePhotos.getAbsolutePath());
         File[] files = dir.listFiles();
-        ArrayList<Photo> listNomsDeFichierComplet = new ArrayList<>();
-        ArrayList<Photo> listNomsDeFichierSpecifique = new ArrayList<>();
-        for (File inFile : files) {
-            listNomsDeFichierComplet.add(new Photo(inFile));
-        }
-        for (Photo photo : listNomsDeFichierComplet){
-            photo.parserInfosFichierSource(photo.fichierSource);
-        }
-        for (Photo photo : listNomsDeFichierComplet) {
-            Log.d("photo.getStation()",": "+photo.getStation()+"nomStationBus: "+nomStationBus);
-            if(photo.getStation().equals(nomStationBus)) {
-                Log.d("listphotosstations", "fichierSource: " + photo.getFichierSource());
-                Log.d("listphotosstations", "titre: " + photo.getTitre());
-               // titres.add(photo.getTitre());
-                Log.d("listphotosstations", "station: " + photo.getStation());
-                Log.d("listphotosstations", "date: " + photo.getDate());
-                Log.d("listphotosstations", "heure: " + photo.getHeure());
-                //dateEtHeure.add(photo.getDate() + " - " + photo.getHeure());
-                listNomsDeFichierSpecifique.add(photo);
+        ArrayList<Photo> listeFichiersComplete = new ArrayList<>();
+        ArrayList<Photo> listeFichiersSpecifique = new ArrayList<>();
+        if (files != null) {
+            for (File inFile : files) {
+                listeFichiersComplete.add(new Photo(inFile));
+            }
+            for (Photo photo : listeFichiersComplete) {
+                photo.parserInfosFichierSource(photo.fichierSource);
+            }
+            for (Photo photo : listeFichiersComplete) {
+                if (photo.getStation().equals(nomStationBus)) {
+                    //Log.d("listphotosstations", "fichierSource: " + photo.getFichierSource());
+                    //Log.d("listphotosstations", "titre: " + photo.getTitre());
+                    //Log.d("listphotosstations", "station: " + photo.getStation());
+                    //Log.d("listphotosstations", "date: " + photo.getDate());
+                    //Log.d("listphotosstations", "heure: " + photo.getHeure());
+                    listeFichiersSpecifique.add(photo);
+                }
             }
         }
-
-        ArrayAdapterPersonalise adapter = new ArrayAdapterPersonalise(getActivity(),listNomsDeFichierSpecifique);
+        // On transmet les infos nécessaires à notre adapter personnalisé pour qu'il puisse afficher la liste de photos
+        ArrayAdapterPersonnalise adapter = new ArrayAdapterPersonnalise(getActivity(),listeFichiersSpecifique);
         setListAdapter(adapter);
     }
 

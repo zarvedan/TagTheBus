@@ -20,25 +20,17 @@ import android.widget.TextView;
 
 import com.google.android.gms.plus.PlusOneButton;
 
-/**
- * A fragment with a Google +1 button.
- * Activities that contain this fragment must implement the
- * {@link PhotoPleinEcranFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link PhotoPleinEcranFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class PhotoPleinEcranFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+//*******************************************************
+//
+//    Class PhotoPleinEcranFragment:
+//      Affiche la photo sélectionnée en plein écran
+//
+//********************************************************
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+public class PhotoPleinEcranFragment extends Fragment {
 
     // The URL to +1.  Must be a valid URL.
+    // URL par défaut : -> changement à prévoir
     private final String PLUS_ONE_URL = "http://developer.android.com";
 
     // The request code must be 0 or greater.
@@ -47,26 +39,14 @@ public class PhotoPleinEcranFragment extends Fragment {
     private PlusOneButton mPlusOneButton;
 
     private OnFragmentInteractionListener mListener;
-    protected String path = new String();
+    protected String path;
     protected View view;
-    private Bitmap bitmap;
     private Bitmap rotatedBitmap;
+    protected Photo photo;
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment PhotoPleinEcranFragment.
-     */
-    // TODO: Rename and change types and number of parameters
+
     public static PhotoPleinEcranFragment newInstance(String param1, String param2) {
         PhotoPleinEcranFragment fragment = new PhotoPleinEcranFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
         return fragment;
     }
 
@@ -77,18 +57,17 @@ public class PhotoPleinEcranFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-        Log.d("PhotoPleinEcranFragment", "on create ");
     }
 
+    // On récupère le fichier dont l'adresse est "path" et on l'affiche
+    // "path" est initialisé dans "afficheImage" appelé dans ListPhotosStationsFragment
+    // On réduit la qualité et on pivote notre bitmap avant de l'afficher dans notre ImageView
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Log.d("PhotoPleinEcranFragment", "on createView ");
+
         View view =  inflater.inflate(R.layout.fragment_photo_plein_ecran, container, false);
         ImageView photoPleinEcran = (ImageView) view.findViewById(R.id.photoPleinEcran);
+        TextView titrePhoto = (TextView) view.findViewById(R.id.titrePhoto);
 
         try {
             BitmapFactory.Options options = new BitmapFactory.Options();
@@ -97,30 +76,30 @@ public class PhotoPleinEcranFragment extends Fragment {
             Display display = getActivity().getWindowManager().getDefaultDisplay();
             Point size = new Point();
             display.getSize(size);
-            int width = size.x;
-            int height = size.y;
+
             Matrix matrix = new Matrix();
-            bitmap = BitmapFactory.decodeFile(path,options);
+            Bitmap bitmap = BitmapFactory.decodeFile(path,options);
             matrix.postRotate(90);
-
-            //Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap,height,width,true);
-
             rotatedBitmap = Bitmap.createBitmap(bitmap , 0, 0, bitmap .getWidth(), bitmap .getHeight(), matrix, true);
+            // On libère de l'espace mémoire en recyclant le bitmap
             bitmap.recycle();
-            bitmap = null;
+
             photoPleinEcran.setImageBitmap(rotatedBitmap);
+            titrePhoto.setText(this.photo.getTitre());
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Log.d("On check pathed", ": " + this.path);
         mPlusOneButton = (PlusOneButton) view.findViewById(R.id.plus_one_button);
         return view;
     }
 
-    public void afficheImage(String path){
-        this.path = path;
-        Log.d("OK path afficher image", ": " + this.path);
+    // Méthode appelée dans ListPhotosStationsFragment
+    // Permet d'initialiser "path" et "photo" utilisés dans onCreateView
+
+    public void afficheImage(Photo photo){
+        this.photo = photo;
+        this.path = this.photo.getFichierSource().getAbsolutePath();
     }
 
     @Override
@@ -128,13 +107,6 @@ public class PhotoPleinEcranFragment extends Fragment {
         super.onResume();
         // Refresh the state of the +1 button each time the activity receives focus.
         mPlusOneButton.initialize(PLUS_ONE_URL, PLUS_ONE_REQUEST_CODE);
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
     }
 
     @Override
@@ -152,8 +124,8 @@ public class PhotoPleinEcranFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        // On libère de l'espace mémoire en recyclant le bitmap
         rotatedBitmap.recycle();
-        Log.d("onDetach", "onDetach !!!!" +rotatedBitmap.isRecycled());
         rotatedBitmap = null;
 
     }
@@ -170,7 +142,7 @@ public class PhotoPleinEcranFragment extends Fragment {
      */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
-        public void onFragmentInteraction(Uri uri);
+        public void onFragmentInteractionPhotoPleinEcran(Uri uri);
     }
 
 }

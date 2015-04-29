@@ -17,12 +17,21 @@ import java.util.ArrayList;
  * Created by zarvedan on 28/04/2015.
  */
 
-public class ArrayAdapterPersonalise extends ArrayAdapter<Photo> {
+//*******************************************************
+//
+//    Class ArrayAdapterPersonnalise:
+//      Adapter personnalisé pour pouvoir gérer la photo miniature
+//      et les 2 textes à afficher
+//
+//********************************************************
+
+
+public class ArrayAdapterPersonnalise extends ArrayAdapter<Photo> {
 
     private final Context context;
     private final ArrayList<Photo> arrayListPhotos;
 
-    public ArrayAdapterPersonalise(Context context, ArrayList<Photo> arrayListPhotos) {
+    public ArrayAdapterPersonnalise(Context context, ArrayList<Photo> arrayListPhotos) {
         super(context, R.layout.image_et_texte_layout, arrayListPhotos);
         this.context = context;
         this.arrayListPhotos = arrayListPhotos;
@@ -40,17 +49,16 @@ public class ArrayAdapterPersonalise extends ArrayAdapter<Photo> {
         ImageView miniature = (ImageView) ligneListView.findViewById(R.id.miniature);
         Log.d("path", ": " + arrayListPhotos.get(position).getFichierSource().getAbsolutePath());
         final BitmapFactory.Options options = new BitmapFactory.Options();
+
         // Réduction de la qualité pour conserver de la mémoire
         options.inSampleSize = 8;
 
         Bitmap bitmap = BitmapFactory.decodeFile(arrayListPhotos.get(position).getFichierSource().getAbsolutePath(),options);
-
         miniature.setImageBitmap(bitmap);
 
         TextView titreView = (TextView) ligneListView.findViewById(R.id.titre);
         TextView dateView = (TextView) ligneListView.findViewById(R.id.date);
 
-     //   miniature.setImageResource(arrayListPhotos.get(position).getFichierSource().hashCode());
         titreView.setText(arrayListPhotos.get(position).getTitre());
         dateView.setText(arrayListPhotos.get(position).getDate());
 

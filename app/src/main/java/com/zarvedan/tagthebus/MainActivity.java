@@ -3,7 +3,6 @@ package com.zarvedan.tagthebus;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -24,11 +23,24 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+
+
+//*******************************************************************
+//
+//                  TEST : Tag The Bus !
+//
+//
+//
+//                                      pour AQUAFADAS
+//
+//                                      par André Vaz
+//                                      andrevaz1981@gmail.com
+//                                      du 24/04/2015 au 29/04/2015
+//
+//*******************************************************************
+
 
 
 public class MainActivity extends ActionBarActivity
@@ -36,35 +48,24 @@ public class MainActivity extends ActionBarActivity
         ListStationsFragment.OnFragmentInteractionListener,
         MyMapFragment.OnFragmentInteractionListener,
         ListPhotosStationsFragment.OnFragmentInteractionListener,
-        PhotoPleinEcranFragment.OnFragmentInteractionListener
-{
+        PhotoPleinEcranFragment.OnFragmentInteractionListener{
 
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
+
     SectionsPagerAdapter mSectionsPagerAdapter;
-    static final int REQUEST_IMAGE_CAPTURE = 1;
     static final int REQUEST_TAKE_PHOTO = 1;
 
     /**
      * The {@link ViewPager} that will host the section contents.
      */
     ViewPager mViewPager;
-    public FragmentManager fm = getSupportFragmentManager();
-    public ListStationsFragment myListStationsFragment;
     public ActionBar myActionBar;
-    protected String mCurrentPhotoPath;
-    //Variables Toast
-    public Toast toast;
-    public int duration = Toast.LENGTH_LONG;
-    public ArrayList<String> listStationsBusString = new ArrayList<>();
+
+    // Le répertoire où seront stockées les photos, dans mon cas /storage/emulated/0/TagTheBus
+    // Si l'utilisateur supprime l'appli, il conservera tout de même ses photos dans ce répertoire
     public File repertoirePhotos = Environment.getExternalStoragePublicDirectory("/TagTheBus");
-    public String nomDuFichier;
+
+    // Variable globale pour pouvoir la récupérer au moment de renommer
+    // le fichier lorsque l'utilisateur aura saisi un nom pour sa photo
     public File monFichier;
     protected Marker marker;
 
@@ -72,7 +73,6 @@ public class MainActivity extends ActionBarActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        fm = getSupportFragmentManager();
 
         // Set up the action bar.
         myActionBar = getSupportActionBar();
@@ -80,8 +80,6 @@ public class MainActivity extends ActionBarActivity
         myActionBar.setCustomView(R.layout.action_bar_layout);
         myActionBar.setDisplayShowCustomEnabled(true);
 
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
@@ -116,21 +114,18 @@ public class MainActivity extends ActionBarActivity
         super.onStart();
     }
 
-    public void sauvegarderList(ArrayList<String> arrayList){
-        Log.d("h","Arraylist:"+arrayList.toString());
-        listStationsBusString = arrayList;
-    }
-
-    /* public ArrayList<String> recupererListeStations(){
-         return listStationsBusString;
-     }
- */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+
+    //************************************
+    //
+    // Menu options : A prévoir
+    //
+    // *********************************
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -143,13 +138,15 @@ public class MainActivity extends ActionBarActivity
         if (id == R.id.action_settings) {
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
-    public void refreshList(View view){
 
-    }
+    //************************************
+    //
+    // Tabs methods
+    //
+    // *********************************
 
     @Override
     public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
@@ -165,28 +162,6 @@ public class MainActivity extends ActionBarActivity
     @Override
     public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
     }
-
-    @Override
-    public void onFragmentInteractionListStations(String id) {
-
-    }
-
-    @Override
-    public void onFragmentInteractionMap(Uri uri) {
-
-    }
-
-    @Override
-    public void onFragmentInteractionListPhotosStations(String id) {
-
-    }
-
-    @Override
-    public void onFragmentInteraction(Uri uri) {
-
-    }
-
-
 
 
     /**
@@ -206,11 +181,9 @@ public class MainActivity extends ActionBarActivity
                     return MyMapFragment.newInstance("", "");
                 case 1:
                     return ListStationsFragment.newInstance("","");
-                //return ListPhotosStationsFragment.newInstance("","");
             }
             return null;
         }
-
 
         @Override
         public int getCount() {
@@ -230,31 +203,60 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
+    //********************************************************
+    //
+    // Méthodes appelées par clic bouton
+    //
+    // *******************************************************
+
+
+    // Méthode appelée lors du clic sur le logo appareil photo (au-dessus de la liste de photos)
     public void prendrePhoto(View view) {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentManager fm = getSupportFragmentManager();
 
-        ListPhotosStationsFragment fragment = (ListPhotosStationsFragment) fragmentManager.findFragmentById(R.id.ListPhotosStationsContainer);
-        Log.d("VIEW",":"+fragment.nomStationBus);
+        ListPhotosStationsFragment fragment = (ListPhotosStationsFragment) fm.findFragmentById(R.id.ListPhotosStationsContainer);
         String nomStation = fragment.nomStationBus;
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            // Create the File where the photo should go
-            File photoFile = null;
-            try {
-                photoFile = creerFichier(nomStation);
-            } catch (IOException e) {
-                Log.d("Erreur creationFichier ",": "+e);
-            }
-            // Continue only if the File was successfully created
-            if (photoFile != null) {
 
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-                        Uri.fromFile(photoFile));
+            File fichierDestination = null;
+            try {
+                fichierDestination = creerFichier(nomStation);
+            } catch (IOException e) {
+                Log.d("Erreur créationFichier ",": "+e);
+            }
+
+            if (fichierDestination != null) {
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fichierDestination));
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
         }
     }
 
+    // Lors d'un clic sur un marker un bouton  apparait en haut a droite, sous le bouton de géolocalisation
+    // Lorsque ce bouton est cliqué, cette méthode est appelée pour afficher la liste des photos de cette station
+    public void voirListePhotos(View view){
+
+        myActionBar = getSupportActionBar();
+        myActionBar.hide();
+
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        ListPhotosStationsFragment fragment = new ListPhotosStationsFragment();
+        try {
+            fragment.recupererNomStation(marker.getTitle());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        ft.replace(R.id.ListPhotosStationsContainer,fragment);
+        ft.addToBackStack(null);
+        ft.show(fragment);
+        ft.commit();
+    }
+
+
+    // Méthode appelée lorsque la photo est enregistrée par l'utilisateur
+    //On ouvre un AlertDialog pour qu'il puisse saisir le titre souhaité
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Check which request we're responding to
@@ -270,32 +272,34 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
+    // Méthode appelée lorsque l'utilisateur a saisi le titre de sa photo
     protected void enregistrerPhoto(String titrePhoto){
-        if (this.monFichier==null){
-            Log.d("enregistrerPhoto","NULL:"+titrePhoto);
-        }
-        File monFichierAvecTitre = null;
-        try {
-            monFichierAvecTitre = new File(repertoirePhotos, titrePhoto+"@"+this.monFichier.getName());
-            Boolean renommageReussi = this.monFichier.renameTo(monFichierAvecTitre);
-            if (!renommageReussi){
-                Log.d("enregistrerPhoto KO",":"+monFichierAvecTitre.getName());
-            }else{
-                Log.d("renommage ","OK");
+        if (this.monFichier != null) {
+            File monFichierAvecTitre = null;
+            try {
+                monFichierAvecTitre = new File(repertoirePhotos, titrePhoto + "@" + this.monFichier.getName());
+                Boolean renommageReussi = this.monFichier.renameTo(monFichierAvecTitre);
+                if (!renommageReussi) {
+                    Log.d("enregistrerPhoto ", "KO:" + monFichierAvecTitre.getName());
+                } else {
+                    Log.d("enregistrerPhoto ", "OK");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
+    // Création du du fichier du type titre@station%date_heure*millisecondes
+    // Les photos sont stockées dans le répertoire public source du téléphone android + TagTheBus
+    // Dans mon cas /storage/emulated/0/TagTheBus
+    // Si l'utilisateur supprime l'appli, il conservera tout de même ses photos dans ce répertoire
     protected File creerFichier(String nomPhoto) throws IOException {
-
         String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date());
         String imageFileName = nomPhoto +"%"+ timeStamp+"*";
-        nomDuFichier = imageFileName+".jpg";
+        String nomDuFichier = imageFileName+".jpg";
 
         if (!repertoirePhotos.exists()) {
-            Log.d("creerFichier","On crée le répertoire");
             Boolean repertoireCree = repertoirePhotos.mkdir();
             if (repertoireCree){
                 Log.d("REPERTOIRE CREE","OK");
@@ -306,53 +310,58 @@ public class MainActivity extends ActionBarActivity
                 ".jpg",         /* suffix */
                 repertoirePhotos      /* directory */
         );
-
+        // nom de fichier temp car l'utilisateur, en ajoutant un titre à la photo, va renommer le fichier
         Log.d("CREER FICHIER","nom de fichier temp :"+monFichier.getAbsolutePath());
-        // Save a file: path for use with ACTION_VIEW intents
-        //mCurrentPhotoPath = "file:" + image.getAbsolutePath();
         return monFichier;
     }
 
-    public void voirListePhotos(View view){
-        Log.d("ListItemClick","voirliste photooooos");
 
-        myActionBar = getSupportActionBar();
-        myActionBar.hide();
-        //view.setVisibility(View.INVISIBLE);
+    // Gestion du bouton Back sur certains cas de figure
+    @Override
+    public void onBackPressed() {
 
         FragmentManager fm = getSupportFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
-        ListPhotosStationsFragment fragment = new ListPhotosStationsFragment();
-        try {
-            fragment.recupererNomStation(marker.getTitle());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        ft.replace(R.id.ListPhotosStationsContainer,fragment);
-        ft.addToBackStack(null);
-        ft.show(fragment);
+        ListPhotosStationsFragment fragment = (ListPhotosStationsFragment) fm.findFragmentById(R.id.ListPhotosStationsContainer);
 
-        ft.commit();
+        if(fragment != null){
+            //Le fragment existe, on laisse "back" fonctionner normalement
+            // c'est-à-dire avec la gestion des backstack des fragments
+            super.onBackPressed();
+        }
+        if(fragment == null) {
+            //Le fragment n'existe pas, on affiche un AlertDialog pour demander
+            // à l'utilisateur de confirmer la fermeture de l'appli
+            AlertDialogQuitFragment alertdFragment = new AlertDialogQuitFragment();
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.add(alertdFragment, "Quit");
+            ft.commit();
+        }
     }
 
-   /* @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        Log.d("onBackPressed", "BACK PRESSED ");
-        FragmentManager fm = getSupportFragmentManager();
+    //****************************************
+    //
+    // Méthodes d'interface à implémenter
+    //
+    //***************************************
 
-        ListPhotosStationsFragment fragment = (ListPhotosStationsFragment) fm.findFragmentById(R.id.ListPhotosStationsContainer);
-        if(fragment != null){
-            Log.d("Back","fragment is null");
-            Boolean success = fragment.isVisible();
-            if(!success) {
-                Log.d("ListPhotosStationsFr", "non visible on demande a quitter ");
-                FragmentTransaction transaction = fm.beginTransaction();
-                AlertDialogQuitFragment alertdFragment = new AlertDialogQuitFragment();
-                FragmentTransaction ft = fm.beginTransaction();
-                ft.add(alertdFragment, "Quit");
-                ft.commit();
-            }
-        }
-    }*/
+    @Override
+    public void onFragmentInteractionListStations(String id) {
+
+    }
+
+    @Override
+    public void onFragmentInteractionMap(Uri uri) {
+
+    }
+
+    @Override
+    public void onFragmentInteractionListPhotosStations(String id) {
+
+    }
+
+    @Override
+    public void onFragmentInteractionPhotoPleinEcran(Uri uri) {
+
+    }
+
 }

@@ -4,15 +4,14 @@ import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.ActionBarActivity;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -20,7 +19,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.gms.gcm.GoogleCloudMessaging;
+
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -33,58 +32,35 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
+//***********************************
+//
+//    Class MyMapFragment:
+//      Contient la map
+//
+//***********************************
 
-
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link MyMapFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link MyMapFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class MyMapFragment extends Fragment implements OnMapReadyCallback,
         GoogleMap.OnMarkerClickListener,
         GoogleMap.OnMapClickListener{
 
-    //protected LatLng barcelone = new LatLng(41.4118235, 2.1853989);
     protected LatLng barcelone = new LatLng(41.4, 2.19);
     GoogleMap mapBarcelone;
-    ListStationsFragment listStations = new ListStationsFragment();
-    ArrayList<String> listStationsDeBusString = new ArrayList<>();
-    ArrayList<Station> listStationsDeBus = new ArrayList<>();
     private static Integer ZOOM_LEVEL = 14;
+
     private View view;
-    //WebService pour Barcelone mais peut-être changer pour une autre ville
+
+    //Adresse du webservice
     String url = "http://barcelonaapi.marcpous.com/bus/nearstation/latlon/41.3985182/2.1917991/1.json";
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    //Variables Toast
+    public Toast toast;
+    public int duration = Toast.LENGTH_LONG;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     private OnFragmentInteractionListener mListener;
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment MapFragment.
-     */
-    // TODO: Rename and change types and number of parameters
     public static MyMapFragment newInstance(String param1, String param2) {
         MyMapFragment fragment = new MyMapFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
         return fragment;
     }
 
@@ -95,11 +71,6 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-
     }
 
     @Override
@@ -114,12 +85,8 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onStart() {
         super.onStart();
-        Log.d("MYMAPFRAGMENT","ON START");
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
-        if (mapFragment == null) {
-            Log.d("MapFragment is null", "yo");
-        }
         if (mapFragment != null) {
             try {
                 mapFragment.getMapAsync(this);
@@ -131,6 +98,8 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback,
         }
     }
 
+    // Méthode qui récupère le résultat de l'appel du webservice au format JSON
+    // Utilisation de Volley pour la gestion des appels aux webservices en asynchrone
     public void recupererListStations() {
         RequestQueue queue = Volley.newRequestQueue(getActivity().getApplicationContext());
         final JsonObjectRequest jsObjRequest = new JsonObjectRequest(Request.Method.GET, url, null,
@@ -139,7 +108,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback,
                     public void onResponse(JSONObject response) {
                         Log.d("WEBSERVICE MAP: ", "OK");
                         try {
-                            remplirListeStationsBus(response);
+                            afficherMarkersStationsBus(response);
                         } catch (Throwable throwable) {
                             throwable.printStackTrace();
                         }
@@ -148,13 +117,17 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback,
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.d("WEBSERVICE MAP: ", "ERREUR: " + error.toString());
+                toast = Toast.makeText(getActivity(), "Veuillez vérifier votre connexion internet.", duration);
+                toast.show();
             }
         }
         );
         queue.add(jsObjRequest);
     }
 
-    public void remplirListeStationsBus(JSONObject response) throws Throwable {
+    //Méthode qui affiche les markers sur la map  avec le titre et les coordonées récupéres
+    // dans le JSON renvoyé par le webservice
+    public void afficherMarkersStationsBus(JSONObject response) throws Throwable {
         JSONObject jsObjData = null;
         JSONArray jsArrNearstations = null;
         JSONObject jsObjStationDeBus = null;
@@ -169,22 +142,17 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback,
                 String lat = jsObjStationDeBus.getString("lat");
                 String lng = jsObjStationDeBus.getString("lon");
 
-                listStationsDeBusString.add(jsObjStationDeBus.getString("street_name"));
-                listStationsDeBus.add(new Station(nom,lat,lng));
-                if(mapBarcelone == null){
-                    Log.d("mapBarcelone"," is null");
+                if (mapBarcelone != null) {
+                    mapBarcelone.addMarker(new MarkerOptions()
+                            .title(nom)
+                            .position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))));
                 }
-                mapBarcelone.addMarker(new MarkerOptions()
-                        .title(nom)
-                        .position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))));
             }
 
         } catch (JSONException e) {
             Log.w("Remplir liste error", "CATCH exception :" + e.toString());
             Log.d("JSON Error", response.toString());
         }
-        ((MainActivity) getActivity()).sauvegarderList(listStationsDeBusString);
-
     }
 
     @Override
@@ -213,6 +181,8 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback,
         mapBarcelone.setOnMapClickListener((GoogleMap.OnMapClickListener) this);
     }
 
+
+    // Lors d'un clic sur un marker, on affiche un bouton en haut a droite, sous le bouton de géolocalisation
     @Override
     public boolean onMarkerClick(Marker marker) {
         Log.d("marker",":"+marker.getTitle());
@@ -220,7 +190,9 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback,
             FrameLayout fl = (FrameLayout) view.findViewById(R.id.layoutBouton);
             fl.setVisibility(View.VISIBLE);
             ImageButton ib = (ImageButton) view.findViewById(R.id.boutonGallerie);
-            fl.setVisibility(View.VISIBLE);
+            ib.setVisibility(View.VISIBLE);
+            // on initialise marker dans l'activité principale. Cette variable sera nécessaire  si l'utilisateur
+            // clique sur le bouton qui appelera une méthode dans l'activité, en l'occurence "voirListePhotos"
             ((MainActivity) getActivity()).marker = marker;
         } catch (Exception e) {
             e.printStackTrace();
@@ -228,6 +200,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback,
         return false;
     }
 
+    // Lors d'un clic sur la map, on rend invisible le bouton affiché par la méthode ci-dessus
     @Override
     public void onMapClick(LatLng latLng) {
         FrameLayout fl = (FrameLayout) view.findViewById(R.id.layoutBouton);

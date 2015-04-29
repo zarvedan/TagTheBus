@@ -15,6 +15,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
+
+//*********************************************************
+//
+// Class AlertDialogTitrePhotoFragment:
+//      AlertDialog personnalisé permettant à l'utilisateur
+//      d'entrer un titre pour sa photo
+//
+//          -> gestion des doublons de titres à prévoir
+//
+//********************************************************
+
+
 public class AlertDialogTitrePhotoFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -28,13 +40,12 @@ public class AlertDialogTitrePhotoFragment extends DialogFragment {
                 .setView(titrePhoto)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.d("OK", "ok");
                         ((MainActivity) getActivity()).enregistrerPhoto(titrePhoto.getText().toString());
-                        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                        FragmentManager fm = getActivity().getSupportFragmentManager();
 
-                        ListPhotosStationsFragment fragment = (ListPhotosStationsFragment) fragmentManager.findFragmentById(R.id.ListPhotosStationsContainer);
+                        ListPhotosStationsFragment fragment = (ListPhotosStationsFragment) fm.findFragmentById(R.id.ListPhotosStationsContainer);
+                        // on rafraichit la liste de photos
                         fragment.afficherList();
-                        Log.d("REFRESh", "on a refresh");
                     }
                 })
                 .create();

@@ -1806,9 +1806,9 @@ containing a value of this type.
         public static final int submit_area=0x7f0a0051;
         public static final int tabMode=0x7f0a000b;
         public static final int terrain=0x7f0a001b;
-        public static final int textView=0x7f0a005b;
         public static final int title=0x7f0a003c;
         public static final int titre=0x7f0a005e;
+        public static final int titrePhoto=0x7f0a005b;
         public static final int up=0x7f0a0008;
         public static final int useLogo=0x7f0a0012;
         public static final int withText=0x7f0a0020;

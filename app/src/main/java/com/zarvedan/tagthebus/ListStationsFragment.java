@@ -2,21 +2,18 @@ package com.zarvedan.tagthebus;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
-
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-
 import android.widget.ListView;
-
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -24,47 +21,36 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 
-/**
- * A fragment representing a list of Items.
- * <p/>
- * <p/>
- * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
- * interface.
- */
+//***************************************************************************************
+//
+// Class ListStationsFragment :
+//      Affiche une ListView de toutes les stations de Barcelone
+//
+//*****************************************************************************************
+
 public class ListStationsFragment extends ListFragment {
 
+    //ArrayList qui stockera la liste des stations de bus de Barcelone renvoyée par le webservice
     ArrayList<String> listStationsDeBusString = new ArrayList<>();
-    //WebService pour Barcelone mais peut-être changer pour une autre ville
+
+    //Adresse du webservice
     String url = "http://barcelonaapi.marcpous.com/bus/nearstation/latlon/41.3985182/2.1917991/1.json";
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    //Variables Toast
+    public Toast toast;
+    public int duration = Toast.LENGTH_LONG;
 
     private OnFragmentInteractionListener mListener;
 
-    // TODO: Rename and change types of parameters
     public static ListStationsFragment newInstance(String param1, String param2) {
-       ListStationsFragment fragment = new ListStationsFragment();
+        ListStationsFragment fragment = new ListStationsFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -80,22 +66,10 @@ public class ListStationsFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("on create","List Stations fragment");
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-
-      /* // TODO: Change Adapter to display your content
-        setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, DummyContent.ITEMS));
-                */
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.d("on createview","List Stations fragment");
         View view =  inflater.inflate(R.layout.list_stations_fragment_layout, container, false);
         return view;
     }
@@ -103,7 +77,6 @@ public class ListStationsFragment extends ListFragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        Log.d("on attach","List Stations fragment");
         try {
             mListener = (OnFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
@@ -118,49 +91,43 @@ public class ListStationsFragment extends ListFragment {
         mListener = null;
     }
 
-
+    // Lors d'un clic sur la liste, on affiche le fragment ListPhotosStationsFragment
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
 
         if (null != mListener) {
+            try {
+                Log.d("ListItemClick","pos:"+position+"id:"+id);
+                String nomStationBus = (String)this.getListAdapter().getItem(position);
 
-            Log.d("ListItemClick","pos:"+position+"id:"+id);
-            String nomStationBus = (String)this.getListAdapter().getItem(position);
+                ActionBarActivity myActionBarActivity = (ActionBarActivity) getActivity();
+                myActionBarActivity.getSupportActionBar().hide();
 
-            ActionBarActivity myActionBarActivity = (ActionBarActivity) getActivity();
-            myActionBarActivity.getSupportActionBar().hide();
-
-            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            ListPhotosStationsFragment fragment = new ListPhotosStationsFragment();
-            fragment.recupererNomStation(nomStationBus);
-            fragmentTransaction.replace(R.id.ListPhotosStationsContainer,fragment);
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.show(fragment);
-
-            fragmentTransaction.commit();
-
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                FragmentTransaction ft = fm.beginTransaction();
+                ListPhotosStationsFragment fragment = new ListPhotosStationsFragment();
+                fragment.recupererNomStation(nomStationBus);
+                ft.replace(R.id.ListPhotosStationsContainer,fragment);
+                ft.addToBackStack(null);
+                ft.show(fragment);
+                ft.commit();
+            } catch (Exception e) {
+                toast = Toast.makeText(getActivity(), e.toString(), duration);
+                toast.show();
+                e.printStackTrace();
+            }
         }
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        /*Mise en place d'un timer pour attendre la fin de l'appel du webservice dans MyMapFragment.
-        Préférer communiquer entre fragments via les Bundle ou mise en place d'un écouteur type notify()/wait() */
-         /*   CountDownTimer myCountDown = new CountDownTimer(4000, 1000) {
-                @Override
-                public void onTick(long millisUntilFinished) {
-                }
-                public void onFinish() {
-                    afficherListStations();
-                }
-            }.start();
-            */
         recupererListStations();
     }
 
+    // Méthode qui récupère le résultat de l'appel du webservice au format JSON
+    // Utilisation de Volley pour la gestion des appels aux webservices en asynchrone
     public void recupererListStations() {
         RequestQueue queue = Volley.newRequestQueue(getActivity().getApplicationContext());
         final JsonObjectRequest jsObjRequest = new JsonObjectRequest(Request.Method.GET, url, null,
@@ -185,6 +152,7 @@ public class ListStationsFragment extends ListFragment {
         queue.add(jsObjRequest);
     }
 
+    //Méthode qui remplit l'Arraylist des noms de stations de bus à parir du JSON renvoyé par le webservice
     public void remplirListeStationsBus(JSONObject response) throws Throwable {
         JSONObject jsObjData = null;
         JSONArray jsArrNearstations = null;
@@ -204,18 +172,13 @@ public class ListStationsFragment extends ListFragment {
             Log.w("Remplir liste error", "CATCH exception :" + e.toString());
             Log.d("JSON Error", response.toString());
         }
-        //((MainActivity) getActivity()).sauvegarderList(listStationsDeBusString);
-afficherListStations();
+        afficherListStations();
     }
 
 
     public void afficherListStations(){
-
-        //listStationsDeBusString = ((MainActivity) getActivity()).recupererListeStations();
-        Log.d("afficher", "Arraylist:" + listStationsDeBusString.toString());
         ArrayAdapter<String> listAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, listStationsDeBusString);
         this.setListAdapter(listAdapter);
-
     }
 
 
